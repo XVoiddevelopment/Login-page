@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a0f0a 0%, #000 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efek Grid Futuristik */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Canvas Matrix Lebih Halus */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        /* Container Login Glow */
+        .login-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.5);
+            border-radius: 24px;
+            padding: 2.2rem 2rem;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2), inset 0 0 10px rgba(0, 255, 0, 0.1);
+            transition: 0.3s ease;
+        }
+
+        .login-card:hover {
+            box-shadow: 0 0 45px rgba(0, 255, 0, 0.4);
+            border-color: #0f0;
+        }
+
+        /* Title Glitch Effect */
+        .glitch {
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 0.05em 0 0 rgba(255,0,0,0.4), -0.05em -0.025em 0 rgba(0,255,0,0.4);
+            animation: glitch 2s infinite;
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+        }
+
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0.05em 0 0 rgba(255,0,0,0.4), -0.05em -0.025em 0 rgba(0,255,0,0.4); }
+            25% { text-shadow: -0.05em 0.025em 0 rgba(255,0,0,0.5), 0.05em 0.025em 0 rgba(0,255,0,0.5); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,0.3), -0.025em -0.05em 0 rgba(0,255,0,0.3); }
+            75% { text-shadow: -0.025em -0.025em 0 rgba(255,0,0,0.4), 0.025em 0.05em 0 rgba(0,255,0,0.4); }
+        }
+
+        .sub {
+            color: #8f8;
+            font-size: 0.8rem;
+            margin-bottom: 1.8rem;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed #2a6;
+            display: inline-block;
+            padding-bottom: 4px;
+        }
+
+        /* Input Fields */
+        .input-group {
+            position: relative;
+            margin: 1.2rem 0;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #2a6;
+            padding: 14px 18px;
+            color: #0f0;
+            font-size: 1rem;
+            border-radius: 40px;
+            outline: none;
+            transition: 0.2s;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .input-group input:focus {
+            border-color: #0f0;
+            box-shadow: 0 0 12px #0f0;
+            background: #000;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5a5;
+            pointer-events: none;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label {
+            top: 0;
+            font-size: 0.7rem;
+            background: #000;
+            padding: 0 5px;
+            left: 15px;
+            color: #0f0;
+        }
+
+        input::placeholder {
+            color: #2a4;
+            font-style: italic;
+        }
+
+        /* Tombol */
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #0a0, #060);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            transition: 0.2s;
+            box-shadow: 0 0 8px #0f0;
+        }
+
+        .login-btn:hover {
+            background: #0f0;
+            box-shadow: 0 0 20px #0f0;
+            transform: scale(1.02);
+            color: black;
+        }
+
+        /* Status Message Animasi */
+        .status-area {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            min-height: 50px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .status-text {
+            padding: 8px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0; transform: translateY(5px);}
+            100% { opacity: 1; transform: translateY(0);}
+        }
+
+        /* Footer */
+        .footer-note {
+            margin-top: 1.8rem;
+            font-size: 0.7rem;
+            color: #4a4;
+            border-top: 1px solid #2a4;
+            padding-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            .glitch {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Custom Scroll */
+        ::selection {
+            background: #0f0;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-overlay"></div>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="login-card">
+        <div class="glitch">LOGIN PAGE</div>
+        <div class="sub">// SECURE AUTHENTICATION //</div>
+
+        <div class="input-group">
+            <input type="text" id="username" placeholder=" " autocomplete="off">
+            <label>✧ USERNAME ✧</label>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder=" ">
+            <label>✧ PASSWORD ✧</label>
+        </div>
+
+        <button class="login-btn" id="loginBtn">INITIALIZE</button>
+
+        <div class="status-area" id="statusMsg"></div>
+        <div class="footer-note">
+            ⚡ Log scces,  get key? <a href="https://t.me/NazNotDev">click me</a>
+        </div>
+    </div>
+
+    <script>
+        // ======================= MATRIX RAIN EFFECT (ENHANCED) =======================
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01αβγδεζηθλμξπρστφψω@#$%&*+-<>";
+        const charArray = chars.split('');
+        const fontSize = 14;
+        let columns = Math.floor(width / fontSize);
+        let drops = [];
+
+        function initDrops() {
+            columns = Math.floor(width / fontSize);
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100;
+            }
+        }
+
+        initDrops();
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#0f0';
+            ctx.font = `${fontSize}px 'Courier New', monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = charArray[Math.floor(Math.random() * charArray.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+                ctx.fillText(char, x, y);
+                
+                if (y > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 40);
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            initDrops();
+        });
+
+        // ======================= LOGIC LOGIN dengan efek hacker & redirect =======================
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const statusDiv = document.getElementById('statusMsg');
+
+        // Fungsi untuk menampilkan pesan dengan style
+        function showStatus(message, isError = false) {
+            statusDiv.innerHTML = `<div class="status-text">${message}</div>`;
+            if (isError) {
+                statusDiv.style.color = '#f55';
+            } else {
+                statusDiv.style.color = '#0f0';
+            }
+            setTimeout(() => {
+                if (statusDiv.innerHTML.includes(message)) {
+                    // fade tapi biar
+                }
+            }, 2000);
+        }
+
+        // Efek loading saat login
+        function simulateLoading(callback) {
+            let dots = 0;
+            const interval = setInterval(() => {
+                dots = (dots + 1) % 4;
+                const dotStr = '.'.repeat(dots);
+                statusDiv.innerHTML = `<div class="status-text" style="color:#8f8;">⧫ DECRYPTING TOKEN${dotStr}</div>`;
+            }, 300);
+            setTimeout(() => {
+                clearInterval(interval);
+                callback();
+            }, 1200);
+        }
+
+        function validateAndRedirect() {
+            const user = usernameField.value.trim();
+            const pass = passwordField.value.trim();
+
+            if (user === "FREE" && pass === "Nazreal") {
+                simulateLoading(() => {
+                    showStatus("✔ ACCESS GRANTED. REDIRECTING TO DASHBOARD...");
+                    setTimeout(() => {
+                        // Redirect ke halaman dashboard / tools (ganti URL sesuai keinginan)
+                        window.location.href = "https://xvoiddevelopment.github.io/DASHBOARD/dashboard.html";  // Ganti dengan link dashboardmu
+                    }, 1200);
+                });
+            } else {
+                // Efek getar kecil (visual)
+                const card = document.querySelector('.login-card');
+                card.style.animation = 'shake 0.3s ease-in-out 2';
+                setTimeout(() => {
+                    card.style.animation = '';
+                }, 600);
+                showStatus("⚠ ACCESS DENIED: Invalid credentials. Attempt logged.", true);
+                // Kosongkan password untuk keamanan visual
+                passwordField.value = '';
+                passwordField.focus();
+            }
+        }
+
+        // Animasi shake untuk error
+        const styleShake = document.createElement('style');
+        styleShake.textContent = `
+            @keyframes shake {
+                0% { transform: translateX(0); }
+                25% { transform: translateX(-7px); }
+                75% { transform: translateX(7px); }
+                100% { transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(styleShake);
+
+        loginBtn.addEventListener('click', validateAndRedirect);
+        
+        // Enter key support
+        usernameField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validateAndRedirect();
+        });
+        passwordField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validateAndRedirect();
+        });
+
+        // Efek glitch ekstra pada hover tombol (opsional)
+        console.log("%c⚠ TERMINAL ACCESS INITIATED ⚠", "color: #0f0; font-size: 14px; font-family: monospace;");
+    </script>
+</body>
+</html>
